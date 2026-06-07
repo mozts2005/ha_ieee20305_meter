@@ -28,6 +28,25 @@ def test_normalize_payload_success() -> None:
     assert sample.energy_wh == 1000.0
 
 
+def test_normalize_payload_migration_fields_supported() -> None:
+    client = _client()
+    sample = client._normalize_payload(
+        {
+            "instantaneous_demand_w": 321.0,
+            "voltage_v": 240.0,
+            "current_a": 1.5,
+            "current_summation_delivered_wh": 2000,
+            "current_summation_received_wh": 100,
+        }
+    )
+
+    assert sample.active_power_w == 321.0
+    assert sample.energy_wh == 2000.0
+    assert sample.current_summation_delivered_wh == 2000.0
+    assert sample.current_summation_received_wh == 100.0
+    assert sample.instantaneous_demand_w == 321.0
+
+
 def test_normalize_payload_missing_key_raises() -> None:
     client = _client()
 

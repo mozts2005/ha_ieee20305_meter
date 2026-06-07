@@ -29,6 +29,24 @@ A Home Assistant custom integration for read-only IEEE 2030.5 energy meter telem
 4. Restart Home Assistant.
 5. Add integration from Settings > Devices & Services.
 
+## Migrating From hassio-xcel-itron-mqtt
+
+1. Install this integration via HACS and start setup.
+2. Select `Migrate from Xcel Itron MQTT add-on` in the setup menu.
+3. Enter your previous add-on values:
+	- `meter_ip` and `meter_port`
+	- certificate directory and filenames
+4. Finish setup and verify the LFDI diagnostic sensor value.
+5. Disable the old MQTT add-on after this integration is reporting data.
+
+### Sensor Mapping For Energy Dashboard
+
+| Legacy MQTT-oriented sensor | New integration sensor |
+| --- | --- |
+| `current_summation_delivered_value` | `Current Summation Delivered` |
+| `current_summation_received_value` | `Current Summation Received` |
+| `instantaneous_demand` | `Instantaneous Demand` |
+
 ## Configuration fields
 
 - Endpoint URL

@@ -32,13 +32,19 @@ class TelemetrySample:
     voltage_v: float
     current_a: float
     energy_wh: float
+    current_summation_delivered_wh: float | None = None
+    current_summation_received_wh: float | None = None
+    instantaneous_demand_w: float | None = None
 
-    def to_dict(self) -> dict[str, float]:
+    def to_dict(self) -> dict[str, float | None]:
         return {
             "active_power_w": self.active_power_w,
             "voltage_v": self.voltage_v,
             "current_a": self.current_a,
             "energy_wh": self.energy_wh,
+            "current_summation_delivered_wh": self.current_summation_delivered_wh,
+            "current_summation_received_wh": self.current_summation_received_wh,
+            "instantaneous_demand_w": self.instantaneous_demand_w,
         }
 
 
@@ -82,9 +88,30 @@ class IEEE20305Client:
                 raise ValueError(f"Missing telemetry key: {key}")
             return float(value)
 
+        def _optional_float(key: str) -> float | None:
+            value = payload.get(key)
+            if value is None:
+                return None
+            return float(value)
+
+        active_power_w = _optional_float("active_power_w")
+        if active_power_w is None:
+            active_power_w = _as_float("instantaneous_demand_w")
+
+        delivered_wh = _optional_float("current_summation_delivered_wh")
+        received_wh = _optional_float("current_summation_received_wh")
+        energy_wh = _optional_float("energy_wh")
+        if energy_wh is None:
+            if delivered_wh is None:
+                raise ValueError("Missing telemetry key: energy_wh or current_summation_delivered_wh")
+            energy_wh = delivered_wh
+
         return TelemetrySample(
-            active_power_w=_as_float("active_power_w"),
+            active_power_w=active_power_w,
             voltage_v=_as_float("voltage_v"),
             current_a=_as_float("current_a"),
-            energy_wh=_as_float("energy_wh"),
+            energy_wh=energy_wh,
+            current_summation_delivered_wh=delivered_wh,
+            current_summation_received_wh=received_wh,
+            instantaneous_demand_w=_optional_float("instantaneous_demand_w"),
         )

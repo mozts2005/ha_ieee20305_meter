@@ -26,7 +26,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
-class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float]]):
+class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
     """Coordinate periodic updates from an IEEE 2030.5 endpoint."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
@@ -49,7 +49,7 @@ class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float]]):
         self._client = IEEE20305Client(config=config)
         self.lfdi = compute_lfdi(entry.data[CONF_CLIENT_CERT])
 
-    async def _async_update_data(self) -> dict[str, float]:
+    async def _async_update_data(self) -> dict[str, float | None]:
         try:
             telemetry = await self._client.fetch_telemetry()
             return telemetry.to_dict()

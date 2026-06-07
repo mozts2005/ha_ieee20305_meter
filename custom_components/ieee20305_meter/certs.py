@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import ExtendedKeyUsageOID, NameOID
 
 if TYPE_CHECKING:
@@ -83,8 +83,8 @@ def _resolve_path(config_dir: str, candidate: str) -> Path:
     return Path(config_dir) / path
 
 
-def _generate_ca_certificate() -> tuple[rsa.RSAPrivateKey, x509.Certificate]:
-    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+def _generate_ca_certificate() -> tuple[ec.EllipticCurvePrivateKey, x509.Certificate]:
+    key = ec.generate_private_key(ec.SECP256R1())
     subject = issuer = x509.Name(
         [
             x509.NameAttribute(NameOID.COUNTRY_NAME, "US"),
@@ -104,7 +104,7 @@ def _generate_ca_certificate() -> tuple[rsa.RSAPrivateKey, x509.Certificate]:
         .add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
         .add_extension(
             x509.KeyUsage(
-                digital_signature=False,
+                digital_signature=True,
                 key_encipherment=False,
                 key_cert_sign=True,
                 key_agreement=False,
@@ -122,11 +122,11 @@ def _generate_ca_certificate() -> tuple[rsa.RSAPrivateKey, x509.Certificate]:
 
 
 def _generate_client_certificate(
-    ca_key: rsa.RSAPrivateKey,
+    ca_key: ec.EllipticCurvePrivateKey,
     ca_cert: x509.Certificate,
     endpoint: str,
-) -> tuple[rsa.RSAPrivateKey, x509.Certificate]:
-    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+) -> tuple[ec.EllipticCurvePrivateKey, x509.Certificate]:
+    key = ec.generate_private_key(ec.SECP256R1())
     endpoint_host = _endpoint_host(endpoint)
 
     subject = x509.Name(
@@ -152,7 +152,7 @@ def _generate_client_certificate(
         .add_extension(
             x509.KeyUsage(
                 digital_signature=True,
-                key_encipherment=True,
+                key_encipherment=False,
                 key_cert_sign=False,
                 key_agreement=False,
                 content_commitment=False,
@@ -180,7 +180,7 @@ def _endpoint_host(endpoint: str) -> str:
     return "ieee20305-client"
 
 
-def _write_private_key(path: Path, key: rsa.RSAPrivateKey) -> None:
+def _write_private_key(path: Path, key: ec.EllipticCurvePrivateKey) -> None:
     path.write_bytes(
         key.private_bytes(
             encoding=serialization.Encoding.PEM,
@@ -194,10 +194,10 @@ def _write_certificate(path: Path, cert: x509.Certificate) -> None:
     path.write_bytes(cert.public_bytes(serialization.Encoding.PEM))
 
 
-def _load_private_key(path: Path) -> rsa.RSAPrivateKey:
+def _load_private_key(path: Path) -> ec.EllipticCurvePrivateKey:
     key = serialization.load_pem_private_key(path.read_bytes(), password=None)
-    if not isinstance(key, rsa.RSAPrivateKey):
-        raise TypeError("Expected RSA private key for CA")
+    if not isinstance(key, ec.EllipticCurvePrivateKey):
+        raise TypeError("Expected EC private key for CA")
     return key
 
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.sensor.const import SensorDeviceClass, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfElectricCurrent, UnitOfElectricPotential, UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
@@ -16,10 +17,46 @@ from .const import CONF_SHOW_LFDI, DATA_COORDINATOR, DEFAULT_SHOW_LFDI, DOMAIN
 from .coordinator import IEEE20305DataUpdateCoordinator
 
 SENSOR_DEFINITIONS: dict[str, dict[str, Any]] = {
-    "active_power_w": {"name": "Active Power", "unit": UnitOfPower.WATT},
-    "voltage_v": {"name": "Voltage", "unit": UnitOfElectricPotential.VOLT},
-    "current_a": {"name": "Current", "unit": UnitOfElectricCurrent.AMPERE},
-    "energy_wh": {"name": "Energy", "unit": UnitOfEnergy.WATT_HOUR},
+    "active_power_w": {
+        "name": "Active Power",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "instantaneous_demand_w": {
+        "name": "Instantaneous Demand",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "voltage_v": {
+        "name": "Voltage",
+        "unit": UnitOfElectricPotential.VOLT,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "current_a": {
+        "name": "Current",
+        "unit": UnitOfElectricCurrent.AMPERE,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "energy_wh": {
+        "name": "Energy",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
+    "current_summation_delivered_wh": {
+        "name": "Current Summation Delivered",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
+    "current_summation_received_wh": {
+        "name": "Current Summation Received",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
 }
 
 
@@ -55,6 +92,8 @@ class IEEE20305Sensor(CoordinatorEntity[IEEE20305DataUpdateCoordinator], SensorE
         self._attr_name = meta["name"]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_native_unit_of_measurement = meta["unit"]
+        self._attr_device_class = meta.get("device_class")
+        self._attr_state_class = meta.get("state_class")
 
     @property
     def native_value(self) -> float | None:
