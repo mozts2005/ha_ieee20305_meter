@@ -32,12 +32,11 @@ A Home Assistant custom integration for read-only IEEE 2030.5 energy meter telem
 ## Migrating From hassio-xcel-itron-mqtt
 
 1. Install this integration via HACS and start setup.
-2. Select `Migrate from Xcel Itron MQTT add-on` in the setup menu.
-3. Enter your previous add-on values:
-	- `meter_ip` and `meter_port`
-	- certificate directory and filenames
-4. Finish setup and verify the LFDI diagnostic sensor value.
-5. Disable the old MQTT add-on after this integration is reporting data.
+2. Enter your meter host and port in the primary setup form.
+3. Enable reuse of existing add-on certificate filenames if you want to keep the older file layout.
+4. If enabled, enter the previous certificate directory and filenames.
+5. Finish setup and verify the LFDI diagnostic sensor value.
+6. Disable the old MQTT add-on after this integration is reporting data.
 
 ### Sensor Mapping For Energy Dashboard
 
@@ -49,19 +48,26 @@ A Home Assistant custom integration for read-only IEEE 2030.5 energy meter telem
 
 ## Configuration fields
 
-- Endpoint URL
-- Client certificate path (auto-generated if missing)
-- Client key path (auto-generated if missing)
-- CA certificate path (auto-generated if missing)
+- Meter host or IP address
+- Meter port
 - Poll interval (seconds)
 - Mode (`simulator` or `real`)
+- Meter agent version (`auto`, `v1`, or `v3`)
 - Create LFDI diagnostic sensor (enabled by default)
+- Optional reuse of existing add-on certificate filenames
 
 On first integration startup, the integration checks the configured certificate paths and
 automatically generates missing certificate/key material.
 
 When enabled, the integration exposes a diagnostic sensor that displays the generated
 client certificate LFDI.
+
+The integration now uses IEEE 2030.5 discovery from `/dcap` and usage point resources by
+default, instead of assuming a fixed telemetry endpoint path.
+
+When agent version is set to `v3` or left on `auto`, the integration can classify and expose
+additional entities such as interval Wh, TOU Wh, apparent/reactive energy, max demand, and
+power factor when those readings are present on the meter.
 
 ## Development notes
 

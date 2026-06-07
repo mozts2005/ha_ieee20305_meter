@@ -3,7 +3,7 @@ from ieee20305_client.client import IEEE20305Client, IEEE20305ClientConfig
 
 def _client() -> IEEE20305Client:
     cfg = IEEE20305ClientConfig(
-        endpoint="https://example.local/telemetry",
+        endpoint="https://example.local:8081",
         client_cert="/tmp/client.crt",
         client_key="/tmp/client.key",
         ca_cert="/tmp/ca.crt",
@@ -47,17 +47,15 @@ def test_normalize_payload_migration_fields_supported() -> None:
     assert sample.instantaneous_demand_w == 321.0
 
 
-def test_normalize_payload_missing_key_raises() -> None:
+def test_normalize_payload_allows_sparse_payload_without_energy() -> None:
     client = _client()
+    sample = client._normalize_payload(
+        {
+            "active_power_w": 100,
+            "voltage_v": 230,
+            "current_a": 4,
+        }
+    )
 
-    try:
-        client._normalize_payload(
-            {
-                "active_power_w": 100,
-                "voltage_v": 230,
-                "current_a": 4,
-            }
-        )
-        assert False, "Expected ValueError for missing key"
-    except ValueError as err:
-        assert "energy_wh" in str(err)
+    assert sample.active_power_w == 100.0
+    assert sample.energy_wh is None

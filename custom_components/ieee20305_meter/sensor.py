@@ -57,6 +57,45 @@ SENSOR_DEFINITIONS: dict[str, dict[str, Any]] = {
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
+    "wh_interval_delivered_wh": {
+        "name": "Wh Interval Delivered",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
+    },
+    "wh_interval_received_wh": {
+        "name": "Wh Interval Received",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL,
+    },
+    "tou_wh_delivered_wh": {
+        "name": "TOU Wh Delivered",
+        "unit": UnitOfEnergy.WATT_HOUR,
+        "device_class": SensorDeviceClass.ENERGY,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
+    "vah_delivered_vah": {
+        "name": "VAh Delivered",
+        "unit": "VAh",
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
+    "varh_delivered_varh": {
+        "name": "VARh Delivered",
+        "unit": "varh",
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+    },
+    "max_demand_delivered_w": {
+        "name": "Max Demand Delivered",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
+    "power_factor_abc": {
+        "name": "Power Factor ABC",
+        "unit": None,
+        "state_class": SensorStateClass.MEASUREMENT,
+    },
 }
 
 

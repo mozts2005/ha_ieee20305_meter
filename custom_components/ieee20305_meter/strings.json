@@ -3,40 +3,27 @@
     "step": {
       "user": {
         "title": "IEEE 2030.5 Meter",
-        "description": "Choose setup mode."
-      },
-      "manual": {
-        "title": "Manual Setup",
-        "description": "Configure endpoint and certificates.",
+        "description": "Connect to your meter with the minimum required fields.",
         "data": {
-          "endpoint": "Endpoint URL",
-          "client_cert": "Client certificate path",
-          "client_key": "Client key path",
-          "ca_cert": "CA certificate path",
+          "meter_host": "Meter host or IP address",
+          "meter_port": "Meter port",
           "poll_interval": "Poll interval (seconds)",
           "mode": "Mode",
-          "show_lfdi": "Create LFDI diagnostic sensor"
+          "agent_version": "Meter agent version",
+          "show_lfdi": "Create LFDI diagnostic sensor",
+          "migrate_existing_addon_paths": "Reuse certificate filenames from the old MQTT add-on"
         }
       },
       "migrate_from_addon": {
         "title": "Migrate From Xcel Itron MQTT Add-on",
-        "description": "Import equivalent settings from the older add-on schema.",
+        "description": "Reuse the old add-on certificate file layout while keeping the simpler new setup.",
         "data": {
-          "meter_ip": "Meter IP address",
-          "meter_port": "Meter port",
           "cert_dir": "Certificate directory",
           "cert_file": "Client certificate filename",
           "key_file": "Client key filename",
-          "ca_file": "CA certificate filename",
-          "poll_interval": "Poll interval (seconds)",
-          "mode": "Mode",
-          "show_lfdi": "Create LFDI diagnostic sensor"
+          "ca_file": "CA certificate filename"
         }
       }
-    },
-    "menu_options": {
-      "manual": "Manual setup",
-      "migrate_from_addon": "Migrate from Xcel Itron MQTT add-on"
     },
     "title": "IEEE 2030.5 Meter"
   }

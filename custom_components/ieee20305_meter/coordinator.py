@@ -13,6 +13,7 @@ from .certs import compute_lfdi
 from .ieee20305_client import IEEE20305Client, IEEE20305ClientConfig
 
 from .const import (
+    CONF_AGENT_VERSION,
     CONF_CA_CERT,
     CONF_CLIENT_CERT,
     CONF_CLIENT_KEY,
@@ -45,6 +46,7 @@ class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float | Non
             client_key=entry.data[CONF_CLIENT_KEY],
             ca_cert=entry.data[CONF_CA_CERT],
             mode=entry.data[CONF_MODE],
+            agent_version=entry.data[CONF_AGENT_VERSION],
         )
         self._client = IEEE20305Client(config=config)
         self.lfdi = compute_lfdi(entry.data[CONF_CLIENT_CERT])
