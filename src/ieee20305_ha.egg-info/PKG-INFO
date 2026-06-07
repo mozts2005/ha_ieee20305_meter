@@ -1,0 +1,53 @@
+Metadata-Version: 2.4
+Name: ieee20305-ha
+Version: 0.1.0
+Summary: Home Assistant IEEE 2030.5 energy meter integration
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# Home Assistant IEEE 2030.5 Meter Integration
+
+A Home Assistant custom integration for read-only IEEE 2030.5 energy meter telemetry.
+
+## Scope (v1)
+
+- Read-only telemetry sensors
+- Polling over HTTPS (IEEE 2030.5 resources)
+- Mutual TLS support (client cert, key, CA bundle)
+- HACS custom integration install support
+
+## Explicit non-scope
+
+- MQTT transport or MQTT broker integration
+- Write/control commands
+- Event push subscriptions
+
+## Repository layout
+
+- `custom_components/ieee20305_meter`: Home Assistant integration
+- `src/ieee20305_client`: reusable IEEE 2030.5 client library
+- `tests`: unit and integration-oriented tests
+
+## HACS install
+
+1. Open HACS in Home Assistant.
+2. Add this repository as a custom integration source.
+3. Install `IEEE 2030.5 Meter`.
+4. Restart Home Assistant.
+5. Add integration from Settings > Devices & Services.
+
+## Configuration fields
+
+- Endpoint URL
+- Client certificate path
+- Client key path
+- CA certificate path
+- Poll interval (seconds)
+- Mode (`simulator` or `real`)
+
+## Development notes
+
+- The implementation uses `DataUpdateCoordinator` polling.
+- No MQTT dependencies are used in code, manifest, or tests.

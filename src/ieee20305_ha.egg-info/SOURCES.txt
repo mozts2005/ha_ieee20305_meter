@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+src/ieee20305_client/__init__.py
+src/ieee20305_client/client.py
+src/ieee20305_ha.egg-info/PKG-INFO
+src/ieee20305_ha.egg-info/SOURCES.txt
+src/ieee20305_ha.egg-info/dependency_links.txt
+src/ieee20305_ha.egg-info/top_level.txt
+tests/test_client_normalization.py
+tests/test_no_mqtt.py

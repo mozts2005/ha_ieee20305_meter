@@ -1,0 +1,12 @@
+{
+  "name": "IEEE 2030.5 Meter",
+  "country": "US",
+  "homeassistant": "2025.1.0",
+  "render_readme": true,
+  "content_in_root": false,
+  "filename": "",
+  "zip_release": false,
+  "domains": [
+    "ieee20305_meter"
+  ]
+}

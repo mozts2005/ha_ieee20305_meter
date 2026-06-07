@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "IEEE 2030.5 Meter",
+        "description": "Configure endpoint and certificates.",
+        "data": {
+          "endpoint": "Endpoint URL",
+          "client_cert": "Client certificate path",
+          "client_key": "Client key path",
+          "ca_cert": "CA certificate path",
+          "poll_interval": "Poll interval (seconds)",
+          "mode": "Mode",
+          "show_lfdi": "Create LFDI diagnostic sensor"
+        }
+      }
+    }
+  }
+}
