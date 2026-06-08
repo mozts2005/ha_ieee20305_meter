@@ -414,5 +414,8 @@ async def test_coordinator_wraps_client_failures_in_update_failed(
 
     coordinator = coordinator_module.IEEE20305DataUpdateCoordinator(FakeHass(), entry)
 
-    with pytest.raises(FakeUpdateFailed, match="Unable to fetch IEEE 2030.5 telemetry"):
+    with pytest.raises(FakeUpdateFailed, match="Unable to fetch IEEE 2030.5 telemetry") as exc_info:
         await coordinator._async_update_data()
+
+    assert "Configured LFDI=ABCDEF" in str(exc_info.value)
+    assert "Energy Providers portal" in str(exc_info.value)

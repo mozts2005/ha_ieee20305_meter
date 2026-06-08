@@ -56,4 +56,8 @@ class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float | Non
             telemetry = await self._client.fetch_telemetry()
             return telemetry.to_dict()
         except Exception as err:  # pragma: no cover
-            raise UpdateFailed(f"Unable to fetch IEEE 2030.5 telemetry: {err}") from err
+            raise UpdateFailed(
+                "Unable to fetch IEEE 2030.5 telemetry: "
+                f"{err}. Configured LFDI={self.lfdi}. "
+                "Verify this LFDI is registered in the Energy Providers portal."
+            ) from err
