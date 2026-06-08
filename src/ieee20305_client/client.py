@@ -77,7 +77,12 @@ class IEEE20305Client:
             payload = await self._fetch_direct_json()
         except (aiohttp.ClientError, ValueError):
             payload = await self._fetch_via_discovery()
+            if not self._has_meaningful_telemetry(payload):
+                payload = await self._fetch_via_xcel_fixed_paths()
         return self._normalize_payload(payload)
+
+    def _has_meaningful_telemetry(self, payload: dict[str, float | None]) -> bool:
+        return any(value is not None for value in payload.values())
 
     async def _fetch_direct_json(self) -> dict[str, Any]:
         data = await self._request_json(self._config.endpoint)
@@ -87,9 +92,7 @@ class IEEE20305Client:
 
     async def _request_json(self, path_or_url: str) -> Any:
         timeout = aiohttp.ClientTimeout(total=self._config.timeout_seconds)
-
-        ssl_context = ssl.create_default_context(cafile=self._config.ca_cert)
-        ssl_context.load_cert_chain(self._config.client_cert, self._config.client_key)
+        ssl_context = self._build_ssl_context()
 
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(self._build_url(path_or_url), ssl=ssl_context) as response:
@@ -100,9 +103,7 @@ class IEEE20305Client:
 
     async def _request_text(self, path_or_url: str) -> str:
         timeout = aiohttp.ClientTimeout(total=self._config.timeout_seconds)
-
-        ssl_context = ssl.create_default_context(cafile=self._config.ca_cert)
-        ssl_context.load_cert_chain(self._config.client_cert, self._config.client_key)
+        ssl_context = self._build_ssl_context()
 
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(self._build_url(path_or_url), ssl=ssl_context) as response:
@@ -161,6 +162,48 @@ class IEEE20305Client:
                 telemetry["active_power_w"] = value
             if reading_key == "current_summation_delivered_wh" and telemetry["energy_wh"] is None:
                 telemetry["energy_wh"] = value
+
+        return telemetry
+
+    async def _fetch_via_xcel_fixed_paths(self) -> dict[str, float | None]:
+        """Fallback for meters that expose values on fixed reading indexes."""
+        telemetry: dict[str, float | None] = {
+            "active_power_w": None,
+            "voltage_v": None,
+            "current_a": None,
+            "energy_wh": None,
+            "current_summation_delivered_wh": None,
+            "current_summation_received_wh": None,
+            "instantaneous_demand_w": None,
+            "wh_interval_delivered_wh": None,
+            "wh_interval_received_wh": None,
+            "tou_wh_delivered_wh": None,
+            "vah_delivered_vah": None,
+            "varh_delivered_varh": None,
+            "max_demand_delivered_w": None,
+            "power_factor_abc": None,
+        }
+
+        for index in range(1, 23):
+            try:
+                reading_type_xml = await self._request_text(f"/rt/{index}")
+                reading_key = self._classify_reading_type_xml(reading_type_xml)
+                if reading_key is None:
+                    continue
+
+                meter_reading_xml = await self._request_text(f"/upt/1/mr/{index}")
+                meter_reading = ET.fromstring(meter_reading_xml)
+                value = await self._read_meter_reading_value(meter_reading)
+                if value is None:
+                    continue
+
+                telemetry[reading_key] = value
+                if reading_key == "instantaneous_demand_w":
+                    telemetry["active_power_w"] = value
+                if reading_key == "current_summation_delivered_wh" and telemetry["energy_wh"] is None:
+                    telemetry["energy_wh"] = value
+            except (aiohttp.ClientError, ET.ParseError, ValueError):
+                continue
 
         return telemetry
 
@@ -285,6 +328,21 @@ class IEEE20305Client:
         if parsed.scheme and parsed.netloc:
             return path_or_url
         return urljoin(f"{self._config.endpoint.rstrip('/')}/", path_or_url.lstrip("/"))
+
+    def _build_ssl_context(self) -> ssl.SSLContext:
+        """Build TLS context compatible with physical meter TLS behavior."""
+        ssl_context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+        ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+        ssl_context.maximum_version = ssl.TLSVersion.TLSv1_2
+        ssl_context.load_cert_chain(self._config.client_cert, self._config.client_key)
+        ssl_context.set_ciphers("ECDHE-ECDSA-AES128-CCM8:@SECLEVEL=0")
+        if hasattr(ssl, "OP_LEGACY_SERVER_CONNECT"):
+            ssl_context.options |= ssl.OP_LEGACY_SERVER_CONNECT
+
+        # Local meter interoperability path: skip server-cert validation.
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        return ssl_context
 
     def _normalize_payload(self, payload: dict[str, Any]) -> TelemetrySample:
         def _as_float(key: str) -> float:
