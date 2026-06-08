@@ -8,3 +8,6 @@ __pycache__/
 .venv/
 .env
 .DS_Store
+
+# Local security material for physical testing (never commit)
+.secrets/

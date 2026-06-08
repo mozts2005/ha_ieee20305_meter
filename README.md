@@ -69,6 +69,35 @@ When agent version is set to `v3` or left on `auto`, the integration can classif
 additional entities such as interval Wh, TOU Wh, apparent/reactive energy, max demand, and
 power factor when those readings are present on the meter.
 
+## Physical local hardware testing
+
+Use a single script that handles both cert bootstrap and direct mTLS probing:
+
+```powershell
+.\.venv\Scripts\python.exe .\scripts\run_local_hardware_test.py --host 10.0.2.71
+```
+
+Default local hardware test behavior:
+
+- Boots xcel-compatible certs when missing
+- Probes only port `8081`
+- Probes only path `/dcap`
+- Uses cipher `ECDHE-ECDSA-AES128-CCM8`
+- Enables legacy renegotiation compatibility
+- Uses metadata from `.secrets/ieee20305/xcel-compat/metadata.json`
+
+Generated local files are written under `.secrets/ieee20305/xcel-compat/`:
+
+- `.cert.pem`
+- `.key.pem`
+- `metadata.json`
+
+Security notes:
+
+- `.secrets/` is gitignored so private keys are not committed.
+- Keep private keys local and rotate if they are ever exposed.
+- Use the generated absolute paths from `metadata.json` in integration configuration.
+
 ## Development notes
 
 - The implementation uses `DataUpdateCoordinator` polling.
