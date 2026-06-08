@@ -76,7 +76,7 @@ class IEEE20305Client:
             payload = await self._fetch_direct_json()
         except (aiohttp.ClientError, ValueError):
             payload = await self._fetch_via_discovery()
-            if not self._has_meaningful_telemetry(payload):
+            if self._config.mode == "real" and not self._has_meaningful_telemetry(payload):
                 payload = await self._fetch_via_xcel_fixed_paths()
         return self._normalize_payload(payload)
 

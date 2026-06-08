@@ -14,7 +14,6 @@ from http.client import HTTPSConnection
 from pathlib import Path
 import ssl
 import socket
-import sys
 from typing import Any
 from urllib.parse import urlparse
 
