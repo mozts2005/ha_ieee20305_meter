@@ -1,5 +1,6 @@
 {
   "name": "IEEE 2030.5 Meter",
+  "icon": "https://raw.githubusercontent.com/mozts2005/ha_ieee20305_meter/main/icon.svg",
   "country": "US",
   "homeassistant": "2025.1.0",
   "render_readme": true,

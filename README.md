@@ -1,5 +1,7 @@
 # Home Assistant IEEE 2030.5 Meter Integration
 
+![IEEE 2030.5 Meter Icon](./icon.svg)
+
 A Home Assistant custom integration for read-only IEEE 2030.5 energy meter telemetry.
 
 ## Scope (v1)

@@ -4,6 +4,7 @@
   "version": "0.1.2",
   "documentation": "https://github.com/example/ieee20305-ha",
   "issue_tracker": "https://github.com/example/ieee20305-ha/issues",
+  "icon": "mdi:meter-electric-outline",
   "config_flow": true,
   "requirements": [],
   "codeowners": [
