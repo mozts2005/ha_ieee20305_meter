@@ -11,6 +11,10 @@ from homeassistant.data_entry_flow import FlowResult
 from .const import (
     AGENT_VERSIONS,
     CONF_AGENT_VERSION,
+    CONF_CA_CERT,
+    CONF_CLIENT_CERT,
+    CONF_CLIENT_KEY,
+    CONF_ENDPOINT,
     CONF_METER_HOST,
     CONF_METER_PORT,
     CONF_MODE,
@@ -32,6 +36,11 @@ class IEEE20305ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
     _pending_user_input: dict[str, Any] | None = None
+
+    @staticmethod
+    def async_get_options_flow(config_entry: config_entries.ConfigEntry) -> IEEE20305OptionsFlow:
+        """Return the options flow for this handler."""
+        return IEEE20305OptionsFlow(config_entry)
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the simplified primary setup step."""
@@ -115,3 +124,51 @@ class IEEE20305ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(unique_id)
         self._abort_if_unique_id_configured()
         return self.async_create_entry(title="IEEE 2030.5 Meter", data=user_input)
+
+
+class IEEE20305OptionsFlow(config_entries.OptionsFlow):
+    """Handle options for IEEE 2030.5 meter integration."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        self._config_entry = config_entry
+
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """Manage integration options."""
+        base = dict(self._config_entry.data)
+        base.update(self._config_entry.options)
+
+        if user_input is not None:
+            entry_data = build_entry_data(
+                meter_host=user_input[CONF_METER_HOST],
+                meter_port=user_input[CONF_METER_PORT],
+                client_cert=str(base[CONF_CLIENT_CERT]),
+                client_key=str(base[CONF_CLIENT_KEY]),
+                ca_cert=str(base[CONF_CA_CERT]),
+                poll_interval=user_input[CONF_POLL_INTERVAL],
+                mode=user_input[CONF_MODE],
+                show_lfdi=user_input[CONF_SHOW_LFDI],
+                agent_version=user_input[CONF_AGENT_VERSION],
+            )
+            entry_data[CONF_ENDPOINT] = build_base_url(
+                str(user_input[CONF_METER_HOST]), int(user_input[CONF_METER_PORT])
+            )
+            return self.async_create_entry(title="", data=entry_data)
+
+        schema = vol.Schema(
+            {
+                vol.Required(CONF_METER_HOST, default=base[CONF_METER_HOST]): str,
+                vol.Optional(CONF_METER_PORT, default=base[CONF_METER_PORT]): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=65535)
+                ),
+                vol.Optional(CONF_POLL_INTERVAL, default=base[CONF_POLL_INTERVAL]): vol.All(
+                    vol.Coerce(int), vol.Range(min=5, max=3600)
+                ),
+                vol.Optional(CONF_MODE, default=base[CONF_MODE]): vol.In(MODES),
+                vol.Optional(CONF_AGENT_VERSION, default=base[CONF_AGENT_VERSION]): vol.In(
+                    AGENT_VERSIONS
+                ),
+                vol.Optional(CONF_SHOW_LFDI, default=base[CONF_SHOW_LFDI]): bool,
+            }
+        )
+
+        return self.async_show_form(step_id="init", data_schema=schema)

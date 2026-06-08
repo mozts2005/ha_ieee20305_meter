@@ -12,6 +12,12 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
 
 
+def _entry_config(entry: ConfigEntry) -> dict[str, Any]:
+    data = dict(entry.data)
+    data.update(entry.options)
+    return data
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up integration from a config entry."""
     from homeassistant.const import Platform
@@ -19,9 +25,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     platforms: list[Any] = [Platform.SENSOR]
 
-    updated_data = await async_ensure_certificates(hass, dict(entry.data))
-    if updated_data != entry.data:
-        hass.config_entries.async_update_entry(entry, data=updated_data)
+    current_config = _entry_config(entry)
+    updated_config = await async_ensure_certificates(hass, current_config)
+    if updated_config != current_config:
+        if entry.options:
+            hass.config_entries.async_update_entry(entry, options=updated_config)
+        else:
+            hass.config_entries.async_update_entry(entry, data=updated_config)
 
     coordinator = IEEE20305DataUpdateCoordinator(hass=hass, entry=entry)
     await coordinator.async_config_entry_first_refresh()

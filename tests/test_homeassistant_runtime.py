@@ -40,6 +40,16 @@ class FakeConfigFlow:
         return {"type": "create_entry", "title": title, "data": data}
 
 
+class FakeOptionsFlow:
+    """Minimal stand-in for Home Assistant's OptionsFlow base."""
+
+    def async_show_form(self, *, step_id: str, data_schema: Any) -> dict[str, Any]:
+        return {"type": "form", "step_id": step_id, "data_schema": data_schema}
+
+    def async_create_entry(self, *, title: str, data: dict[str, Any]) -> dict[str, Any]:
+        return {"type": "create_entry", "title": title, "data": data}
+
+
 class FakeDataUpdateCoordinator:
     """Minimal stand-in for DataUpdateCoordinator."""
 
@@ -77,6 +87,7 @@ def _install_homeassistant_stubs(monkeypatch: pytest.MonkeyPatch) -> None:
     homeassistant = ModuleType("homeassistant")
     config_entries = ModuleType("homeassistant.config_entries")
     config_entries.ConfigFlow = FakeConfigFlow
+    config_entries.OptionsFlow = FakeOptionsFlow
     config_entries.ConfigEntry = object
 
     data_entry_flow = ModuleType("homeassistant.data_entry_flow")
@@ -150,6 +161,11 @@ def _reload_module(module_name: str) -> Any:
 class FakeEntry:
     entry_id: str
     data: dict[str, Any]
+    options: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        if self.options is None:
+            self.options = {}
 
 
 class FakeConfigEntriesManager:
@@ -159,9 +175,19 @@ class FakeConfigEntriesManager:
         self.unloaded: list[tuple[str, list[Any]]] = []
         self.unload_result = True
 
-    def async_update_entry(self, entry: FakeEntry, *, data: dict[str, Any]) -> None:
-        entry.data = data
-        self.updated_entries.append((entry, data))
+    def async_update_entry(
+        self,
+        entry: FakeEntry,
+        *,
+        data: dict[str, Any] | None = None,
+        options: dict[str, Any] | None = None,
+    ) -> None:
+        if data is not None:
+            entry.data = data
+            self.updated_entries.append((entry, data))
+        if options is not None:
+            entry.options = options
+            self.updated_entries.append((entry, options))
 
     async def async_forward_entry_setups(self, entry: FakeEntry, platforms: list[Any]) -> None:
         self.forwarded.append((entry.entry_id, platforms))
@@ -244,6 +270,47 @@ async def test_config_flow_migration_step_reuses_existing_certificate_layout(
     assert Path(migrated["data"]["client_cert"]).as_posix().endswith("legacy/certs/device.pem")
     assert Path(migrated["data"]["client_key"]).as_posix().endswith("legacy/certs/device.key")
     assert Path(migrated["data"]["ca_cert"]).as_posix().endswith("legacy/certs/ca.pem")
+
+
+@pytest.mark.asyncio
+async def test_options_flow_allows_editing_initial_settings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _install_homeassistant_stubs(monkeypatch)
+
+    config_flow = _reload_module("custom_components.ieee20305_meter.config_flow")
+    entry = FakeEntry(
+        entry_id="entry-1",
+        data={
+            "meter_host": "meter.local",
+            "meter_port": 8081,
+            "endpoint": "https://meter.local:8081",
+            "client_cert": "/tmp/client.crt",
+            "client_key": "/tmp/client.key",
+            "ca_cert": "/tmp/ca.crt",
+            "poll_interval": 30,
+            "mode": "simulator",
+            "agent_version": "auto",
+            "show_lfdi": True,
+        },
+    )
+
+    flow = config_flow.IEEE20305ConfigFlow.async_get_options_flow(entry)
+    result = await flow.async_step_init(
+        {
+            "meter_host": "10.0.2.71",
+            "meter_port": 8081,
+            "poll_interval": 60,
+            "mode": "real",
+            "agent_version": "v3",
+            "show_lfdi": False,
+        }
+    )
+
+    assert result["type"] == "create_entry"
+    assert result["data"]["endpoint"] == "https://10.0.2.71:8081"
+    assert result["data"]["client_cert"] == "/tmp/client.crt"
+    assert result["data"]["show_lfdi"] is False
 
 
 @pytest.mark.asyncio

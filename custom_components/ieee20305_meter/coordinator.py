@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 import logging
+from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -27,11 +28,15 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 
+def _entry_value(entry: ConfigEntry, key: str, default: Any = None) -> Any:
+    return entry.options.get(key, entry.data.get(key, default))
+
+
 class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float | None]]):
     """Coordinate periodic updates from an IEEE 2030.5 endpoint."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        poll_seconds = entry.data.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
+        poll_seconds = _entry_value(entry, CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
         super().__init__(
             hass,
             _LOGGER,
@@ -41,15 +46,15 @@ class IEEE20305DataUpdateCoordinator(DataUpdateCoordinator[dict[str, float | Non
         self._entry = entry
 
         config = IEEE20305ClientConfig(
-            endpoint=entry.data[CONF_ENDPOINT],
-            client_cert=entry.data[CONF_CLIENT_CERT],
-            client_key=entry.data[CONF_CLIENT_KEY],
-            ca_cert=entry.data[CONF_CA_CERT],
-            mode=entry.data[CONF_MODE],
-            agent_version=entry.data[CONF_AGENT_VERSION],
+            endpoint=_entry_value(entry, CONF_ENDPOINT),
+            client_cert=_entry_value(entry, CONF_CLIENT_CERT),
+            client_key=_entry_value(entry, CONF_CLIENT_KEY),
+            ca_cert=_entry_value(entry, CONF_CA_CERT),
+            mode=_entry_value(entry, CONF_MODE),
+            agent_version=_entry_value(entry, CONF_AGENT_VERSION),
         )
         self._client = IEEE20305Client(config=config)
-        self.lfdi = compute_lfdi(entry.data[CONF_CLIENT_CERT])
+        self.lfdi = compute_lfdi(_entry_value(entry, CONF_CLIENT_CERT))
 
     async def _async_update_data(self) -> dict[str, float | None]:
         try:

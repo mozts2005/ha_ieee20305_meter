@@ -108,8 +108,8 @@ SENSOR_DEFINITIONS: dict[str, dict[str, Any]] = {
 
 def _meter_device_info(entry: ConfigEntry) -> DeviceInfo:
     """Build meter device metadata so entities group under one device."""
-    meter_host = str(entry.data.get(CONF_METER_HOST, "meter"))
-    meter_port = entry.data.get(CONF_METER_PORT)
+    meter_host = str(entry.options.get(CONF_METER_HOST, entry.data.get(CONF_METER_HOST, "meter")))
+    meter_port = entry.options.get(CONF_METER_PORT, entry.data.get(CONF_METER_PORT))
     meter_name = getattr(entry, "title", None) or f"IEEE 2030.5 Meter ({meter_host})"
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},
@@ -131,7 +131,7 @@ async def async_setup_entry(
         IEEE20305Sensor(coordinator=coordinator, entry=entry, key=key, meta=meta)
         for key, meta in SENSOR_DEFINITIONS.items()
     ]
-    show_lfdi = entry.data.get(CONF_SHOW_LFDI, DEFAULT_SHOW_LFDI)
+    show_lfdi = entry.options.get(CONF_SHOW_LFDI, entry.data.get(CONF_SHOW_LFDI, DEFAULT_SHOW_LFDI))
     if show_lfdi:
         entities.append(IEEE20305LfdiSensor(coordinator=coordinator, entry=entry))
     async_add_entities(entities)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ieee20305-ha"
-version = "0.1.2"
+version = "0.1.4"
 description = "Home Assistant IEEE 2030.5 energy meter integration"
 readme = "README.md"
 requires-python = ">=3.12"
