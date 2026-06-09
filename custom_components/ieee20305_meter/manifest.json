@@ -1,7 +1,7 @@
 {
   "domain": "ieee20305_meter",
   "name": "IEEE 2030.5 Meter",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "documentation": "https://github.com/example/ieee20305-ha",
   "issue_tracker": "https://github.com/example/ieee20305-ha/issues",
   "icon": "mdi:meter-electric-outline",
