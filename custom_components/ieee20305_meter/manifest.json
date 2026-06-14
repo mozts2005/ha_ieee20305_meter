@@ -1,17 +1,18 @@
 {
   "domain": "ieee20305_meter",
   "name": "IEEE 2030.5 Meter",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "documentation": "https://github.com/example/ieee20305-ha",
   "issue_tracker": "https://github.com/example/ieee20305-ha/issues",
   "icon": "mdi:meter-electric-outline",
   "config_flow": true,
   "requirements": [],
   "codeowners": [
-    "@maintainer"
+    "mozts2005"
   ],
   "iot_class": "local_polling",
   "loggers": [
     "ieee20305_client"
-  ]
+  ],
+  "homeassistant": "2024.1.0"
 }

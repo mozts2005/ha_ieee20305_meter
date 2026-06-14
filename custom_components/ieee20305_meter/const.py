@@ -13,10 +13,13 @@ CONF_POLL_INTERVAL = "poll_interval"
 CONF_MODE = "mode"
 CONF_SHOW_LFDI = "show_lfdi"
 CONF_AGENT_VERSION = "agent_version"
+CONF_DISPLAY_NAME = "display_name"
 
-DEFAULT_CLIENT_CERT_PATH = f"{DOMAIN}/certs/client.crt"
-DEFAULT_CLIENT_KEY_PATH = f"{DOMAIN}/certs/client.key"
-DEFAULT_CA_CERT_PATH = f"{DOMAIN}/certs/ca.crt"
+# Device-specific certificate paths (using placeholder for device identifier)
+# Will be resolved at runtime based on meter host/entry ID
+DEFAULT_CLIENT_CERT_PATH = f"{DOMAIN}/certs/{{device_id}}/client.crt"
+DEFAULT_CLIENT_KEY_PATH = f"{DOMAIN}/certs/{{device_id}}/client.key"
+DEFAULT_CA_CERT_PATH = f"{DOMAIN}/certs/{{device_id}}/ca.crt"
 
 DEFAULT_METER_PORT = 8081
 DEFAULT_POLL_INTERVAL = 30

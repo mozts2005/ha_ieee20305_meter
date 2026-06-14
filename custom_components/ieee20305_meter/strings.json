@@ -1,30 +1,132 @@
 {
   "config": {
+    "abort": {
+      "already_configured": "Device is already configured.",
+      "reconfigure_failed": "Failed to reconfigure the device."
+    },
+    "error": {
+      "invalid_host": "Invalid meter host or IP address.",
+      "invalid_port": "Invalid meter port. Must be between 1 and 65535.",
+      "invalid_poll_interval": "Invalid poll interval. Must be between 5 and 3600 seconds.",
+      "cannot_connect": "Failed to connect to meter. Please verify the host and port.",
+      "unknown": "An unknown error occurred."
+    },
     "step": {
       "user": {
         "title": "IEEE 2030.5 Meter",
-        "description": "Connect to your meter with the minimum required fields.",
+        "description": "Connect to your IEEE 2030.5 compliant meter. Minimum required: meter host/IP.",
         "data": {
+          "display_name": "Optional display name",
           "meter_host": "Meter host or IP address",
-          "meter_port": "Meter port",
-          "poll_interval": "Poll interval (seconds)",
-          "mode": "Mode",
-          "agent_version": "Meter agent version",
-          "show_lfdi": "Create LFDI diagnostic sensor",
-          "migrate_existing_addon_paths": "Reuse certificate filenames from the old MQTT add-on"
+          "meter_port": "Meter port (default: 8081)",
+          "poll_interval": "Poll interval in seconds (5-3600, default: 30)",
+          "mode": "Operation mode (simulator or real device)",
+          "agent_version": "Meter agent version (auto, v1, or v3)",
+          "show_lfdi": "Show LFDI diagnostic sensor",
+          "migrate_existing_addon_paths": "Migrate from old MQTT add-on certificate layout"
+        },
+        "data_description": {
+          "display_name": "Friendly name shown in Home Assistant (optional).",
+          "meter_host": "IP address or hostname of your IEEE 2030.5 meter.",
+          "meter_port": "HTTPS port used by the meter (typically 8081).",
+          "poll_interval": "How frequently to poll the meter for updated telemetry.",
+          "mode": "Use 'simulator' for testing, 'real' for production meters.",
+          "agent_version": "Auto-detect recommended for most users.",
+          "show_lfdi": "Enable to view the certificate LFDI (required for Energy Provider registration).",
+          "migrate_existing_addon_paths": "Reuse certificate files from the old Xcel Itron MQTT add-on."
         }
       },
       "migrate_from_addon": {
         "title": "Migrate From Xcel Itron MQTT Add-on",
-        "description": "Reuse the old add-on certificate file layout while keeping the simpler new setup.",
+        "description": "Specify the certificate file layout from the old MQTT add-on.",
         "data": {
-          "cert_dir": "Certificate directory",
+          "cert_dir": "Certificate directory path",
           "cert_file": "Client certificate filename",
           "key_file": "Client key filename",
           "ca_file": "CA certificate filename"
+        },
+        "data_description": {
+          "cert_dir": "Path to the directory containing certificate files.",
+          "cert_file": "Name of the client certificate file (e.g., client.crt).",
+          "key_file": "Name of the client key file (e.g., client.key).",
+          "ca_file": "Name of the CA certificate file (e.g., ca.crt)."
         }
       }
     },
-    "title": "IEEE 2030.5 Meter"
-  }
+    "options": {
+      "step": {
+        "init": {
+          "title": "IEEE 2030.5 Meter Options",
+          "description": "Update meter connection settings and polling configuration.",
+          "data": {
+            "display_name": "Optional display name",
+            "meter_host": "Meter host or IP address",
+            "meter_port": "Meter port",
+            "poll_interval": "Poll interval (seconds)",
+            "mode": "Operation mode",
+            "agent_version": "Meter agent version",
+            "show_lfdi": "Show LFDI diagnostic sensor"
+          }
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "active_power_w": {
+        "name": "Active Power"
+      },
+      "instantaneous_demand_w": {
+        "name": "Instantaneous Demand"
+      },
+      "voltage_v": {
+        "name": "Voltage"
+      },
+      "current_a": {
+        "name": "Current"
+      },
+      "energy_wh": {
+        "name": "Energy"
+      },
+      "current_summation_delivered_wh": {
+        "name": "Current Summation Delivered"
+      },
+      "current_summation_received_wh": {
+        "name": "Current Summation Received"
+      },
+      "wh_interval_delivered_wh": {
+        "name": "Wh Interval Delivered"
+      },
+      "wh_interval_received_wh": {
+        "name": "Wh Interval Received"
+      },
+      "tou_wh_delivered_wh": {
+        "name": "TOU Wh Delivered"
+      },
+      "vah_delivered_vah": {
+        "name": "VAh Delivered"
+      },
+      "varh_delivered_varh": {
+        "name": "VARh Delivered"
+      },
+      "max_demand_delivered_w": {
+        "name": "Max Demand Delivered"
+      },
+      "power_factor_abc": {
+        "name": "Power Factor ABC"
+      },
+      "lfdi": {
+        "name": "LFDI"
+      },
+      "connection_status": {
+        "name": "Connection Status",
+        "state": {
+          "connected": "Connected",
+          "error": "Error",
+          "unknown": "Unknown"
+        }
+      }
+    }
+  },
+  "services": {}
 }

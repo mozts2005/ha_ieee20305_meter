@@ -25,81 +25,81 @@ from .coordinator import IEEE20305DataUpdateCoordinator
 
 SENSOR_DEFINITIONS: dict[str, dict[str, Any]] = {
     "active_power_w": {
-        "name": "Active Power",
+        "translation_key": "active_power_w",
         "unit": UnitOfPower.WATT,
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
     },
     "instantaneous_demand_w": {
-        "name": "Instantaneous Demand",
+        "translation_key": "instantaneous_demand_w",
         "unit": UnitOfPower.WATT,
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
     },
     "voltage_v": {
-        "name": "Voltage",
+        "translation_key": "voltage_v",
         "unit": UnitOfElectricPotential.VOLT,
         "state_class": SensorStateClass.MEASUREMENT,
     },
     "current_a": {
-        "name": "Current",
+        "translation_key": "current_a",
         "unit": UnitOfElectricCurrent.AMPERE,
         "state_class": SensorStateClass.MEASUREMENT,
     },
     "energy_wh": {
-        "name": "Energy",
+        "translation_key": "energy_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "current_summation_delivered_wh": {
-        "name": "Current Summation Delivered",
+        "translation_key": "current_summation_delivered_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "current_summation_received_wh": {
-        "name": "Current Summation Received",
+        "translation_key": "current_summation_received_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "wh_interval_delivered_wh": {
-        "name": "Wh Interval Delivered",
+        "translation_key": "wh_interval_delivered_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL,
     },
     "wh_interval_received_wh": {
-        "name": "Wh Interval Received",
+        "translation_key": "wh_interval_received_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL,
     },
     "tou_wh_delivered_wh": {
-        "name": "TOU Wh Delivered",
+        "translation_key": "tou_wh_delivered_wh",
         "unit": UnitOfEnergy.WATT_HOUR,
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "vah_delivered_vah": {
-        "name": "VAh Delivered",
+        "translation_key": "vah_delivered_vah",
         "unit": "VAh",
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "varh_delivered_varh": {
-        "name": "VARh Delivered",
+        "translation_key": "varh_delivered_varh",
         "unit": "varh",
         "state_class": SensorStateClass.TOTAL_INCREASING,
     },
     "max_demand_delivered_w": {
-        "name": "Max Demand Delivered",
+        "translation_key": "max_demand_delivered_w",
         "unit": UnitOfPower.WATT,
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
     },
     "power_factor_abc": {
-        "name": "Power Factor ABC",
+        "translation_key": "power_factor_abc",
         "unit": None,
         "state_class": SensorStateClass.MEASUREMENT,
     },
@@ -134,11 +134,17 @@ async def async_setup_entry(
     show_lfdi = entry.options.get(CONF_SHOW_LFDI, entry.data.get(CONF_SHOW_LFDI, DEFAULT_SHOW_LFDI))
     if show_lfdi:
         entities.append(IEEE20305LfdiSensor(coordinator=coordinator, entry=entry))
+
+    # Always add connection status sensor for diagnostics
+    entities.append(IEEE20305ConnectionStatusSensor(coordinator=coordinator, entry=entry))
+
     async_add_entities(entities)
 
 
 class IEEE20305Sensor(CoordinatorEntity[IEEE20305DataUpdateCoordinator], SensorEntity):
     """Sensor mapped to one telemetry key."""
+
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -149,7 +155,7 @@ class IEEE20305Sensor(CoordinatorEntity[IEEE20305DataUpdateCoordinator], SensorE
     ) -> None:
         super().__init__(coordinator)
         self._key = key
-        self._attr_name = meta["name"]
+        self._attr_translation_key = meta["translation_key"]
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_device_info = _meter_device_info(entry)
         self._attr_native_unit_of_measurement = meta["unit"]
@@ -164,19 +170,92 @@ class IEEE20305Sensor(CoordinatorEntity[IEEE20305DataUpdateCoordinator], SensorE
         return float(value) if value is not None else None
 
 
-class IEEE20305LfdiSensor(CoordinatorEntity[IEEE20305DataUpdateCoordinator], SensorEntity):
-    """Diagnostic sensor exposing certificate LFDI."""
+class IEEE20305LfdiSensor(SensorEntity):
+    """Diagnostic sensor exposing certificate LFDI.
+
+    This sensor is independent of coordinator state to ensure LFDI
+    is always available for meter registration, even if the meter
+    connection fails.
+    """
 
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:identifier"
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_translation_key = "lfdi"
 
     def __init__(self, coordinator: IEEE20305DataUpdateCoordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator)
-        self._attr_name = "LFDI"
+        self._coordinator = coordinator
         self._attr_unique_id = f"{entry.entry_id}_lfdi"
         self._attr_device_info = _meter_device_info(entry)
 
     @property
     def native_value(self) -> str:
-        """Return certificate LFDI."""
-        return self.coordinator.lfdi
+        """Return certificate LFDI from coordinator.
+
+        LFDI is computed during coordinator initialization from the device's
+        certificate and is always available regardless of meter connectivity.
+        """
+        return self._coordinator.lfdi
+
+    async def async_added_to_hass(self) -> None:
+        """Register update listener when added to hass."""
+        # Listen for any coordinator updates to refresh entity
+        self.async_write_ha_state()
+
+    @property
+    def available(self) -> bool:
+        """LFDI is always available since it comes from the certificate."""
+        return True
+
+
+class IEEE20305ConnectionStatusSensor(SensorEntity):
+    """Diagnostic sensor for connection status and error state.
+
+    Displays whether the meter is connected, in backoff, or in error state.
+    Helps administrators identify and troubleshoot connectivity issues.
+    """
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_icon = "mdi:connection"
+    _attr_should_poll = False
+    _attr_has_entity_name = True
+    _attr_translation_key = "connection_status"
+
+    def __init__(self, coordinator: IEEE20305DataUpdateCoordinator, entry: ConfigEntry) -> None:
+        self._coordinator = coordinator
+        self._entry = entry
+        self._attr_unique_id = f"{entry.entry_id}_connection_status"
+        self._attr_device_info = _meter_device_info(entry)
+
+    @property
+    def native_value(self) -> str:
+        """Return connection status string.
+
+        Returns:
+            - "connected": Meter is connected and responding normally
+            - "error": Meter is in error state (max backoff reached)
+            - "unknown": Initial state or connection status unknown
+        """
+        if self._coordinator.in_error_state:
+            return "error"
+        elif self._coordinator.last_update_success:
+            return "connected"
+        else:
+            return "unknown"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return additional diagnostic attributes."""
+        return {
+            "failed_attempts": self._coordinator._failed_attempts,
+            "max_backoff_seconds": 900,
+            "in_error_state": self._coordinator.in_error_state,
+            "last_update_success": self._coordinator.last_update_success,
+            "update_interval_seconds": int(self._coordinator.update_interval.total_seconds()),
+        }
+
+    @property
+    def available(self) -> bool:
+        """Status sensor is always available."""
+        return True
