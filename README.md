@@ -111,3 +111,36 @@ Security notes:
 - Pull requests require passing CI checks for lint, unit tests, and changelog validation.
 - `CHANGELOG.md` must be updated in every pull request.
 - Merges to `main` are squash-only.
+
+## Commit Message Convention (Required)
+
+Automated versioning and releases on merge to `main` use Python Semantic Release and
+Conventional Commit messages.
+
+Use these commit types to drive version bumps:
+
+- `fix:` -> patch version bump (e.g. `0.2.0` -> `0.2.1`)
+- `feat:` -> minor version bump (e.g. `0.2.0` -> `0.3.0`)
+- `feat!:` or `fix!:` -> major version bump
+- Any commit containing `BREAKING CHANGE:` in the body -> major version bump
+
+Commit types that do not trigger a release by default:
+
+- `chore:`
+- `docs:`
+- `test:`
+- `refactor:`
+- `ci:`
+
+Examples:
+
+- `feat(config): add optional meter display name`
+- `fix(certs): handle legacy shared path migration failure`
+- `feat(api)!: remove deprecated telemetry endpoint`
+
+On successful merge to `main`, the release workflow:
+
+1. Calculates the next semantic version from commit history.
+2. Updates `pyproject.toml` and `custom_components/ieee20305_meter/manifest.json`.
+3. Finalizes `CHANGELOG.md` with the new version and release date.
+4. Creates/pushes the release commit and tag (`vX.Y.Z`) and publishes the GitHub release.

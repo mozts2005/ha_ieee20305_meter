@@ -23,3 +23,21 @@ pythonpath = [
   ".",
   "src"
 ]
+
+[tool.semantic_release]
+tag_format = "v{version}"
+commit_parser = "conventional"
+commit_message = "chore(release): {version} [skip ci]"
+changelog_file = "CHANGELOG.md"
+version_toml = [
+  "pyproject.toml:project.version"
+]
+version_variables = [
+  "custom_components/ieee20305_meter/manifest.json:version"
+]
+major_on_zero = false
+allow_zero_version = false
+
+[tool.semantic_release.branches.main]
+match = "main"
+prerelease = false

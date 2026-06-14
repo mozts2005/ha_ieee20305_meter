@@ -34,3 +34,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Certificate migration preserves key material while moving toward isolated per-device certificate directories.
+
+## [0.1.5] - 2026-06-14
+
+### Added
+- Local brand assets for Home Assistant presentation.
+
+### Changed
+- Release packaging metadata for HACS distribution.
+
+## [0.1.4] - 2026-06-08
+
+### Added
+- HACS metadata and integration icon configuration.
+
+### Changed
+- Repository packaging for HACS compatibility.
+
+## [0.1.2] - 2026-06-08
+
+### Added
+- Certificate bootstrap and LFDI tests.
+- Migration flow and compatibility sensors for MQTT add-on users.
+
+### Changed
+- Setup simplification with IEEE 2030.5 discovery and Home Assistant runtime tests.
+- Local meter telemetry mapping and TLS compatibility improvements.
+- CI stability fixes for telemetry fallback and lint checks.
+
+## [0.1.1] - 2026-06-08
+
+### Changed
+- Initial HACS-oriented version bump and release preparation.
