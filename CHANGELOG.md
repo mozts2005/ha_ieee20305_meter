@@ -1,68 +1,37 @@
-# Changelog
+# CHANGELOG
 
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## v1.0.0 (2026-06-14)
 
-## [Unreleased]
+### Chores
 
-### Added
-- Optional display name support in setup and options flows.
-- Legacy certificate migration from shared paths to per-device certificate paths.
-- Deprecated certificate configuration detection with persistent user notifications.
-- Connection status diagnostic sensor.
-- PR CI changelog enforcement check.
+- **ci**: Enforce PR governance and changelog policy
+  ([`fd2eb00`](https://github.com/mozts2005/ha_ieee20305_meter/commit/fd2eb00a9d2bd8f7b27bd11c447863dcaaf5603e))
 
-### Changed
-- Per-device certificate handling is now the default behavior.
-- Improved config flow validation, translation coverage, and device naming behavior.
-- Backoff handling now escalates failures up to 15 minutes and sets error state.
+- **release**: Configure python semantic release on main
+  ([`7b2dbdc`](https://github.com/mozts2005/ha_ieee20305_meter/commit/7b2dbdc9f2fcfdbb9819e45509281f3ef607a3e3))
 
-## [0.2.0] - 2026-06-14
 
-### Added
-- Device-specific certificate generation and storage.
-- Persistent LFDI availability even when initial meter polling fails.
-- Legacy migration path for centralized certificate configurations.
-- Optional friendly display name for meter entries.
-- Expanded translation keys for config/options/entity text.
+## v0.2.0 (2026-06-14)
 
-### Changed
-- Release metadata/version alignment for Home Assistant manifest and package version.
-- CI workflow now exposes separate required checks for lint/tests and changelog validation.
 
-### Security
-- Certificate migration preserves key material while moving toward isolated per-device certificate directories.
+## v0.1.5 (2026-06-14)
 
-## [0.1.5] - 2026-06-14
 
-### Added
-- Local brand assets for Home Assistant presentation.
+## v0.1.4 (2026-06-08)
 
-### Changed
-- Release packaging metadata for HACS distribution.
 
-## [0.1.4] - 2026-06-08
+## v0.1.2 (2026-06-08)
 
-### Added
-- HACS metadata and integration icon configuration.
 
-### Changed
-- Repository packaging for HACS compatibility.
+## v0.1.1 (2026-06-14)
 
-## [0.1.2] - 2026-06-08
+### Chores
 
-### Added
-- Certificate bootstrap and LFDI tests.
-- Migration flow and compatibility sensors for MQTT add-on users.
+- Declare aiohttp and crypto dependencies for local test env
+  ([`829bad4`](https://github.com/mozts2005/ha_ieee20305_meter/commit/829bad471711715e0dbfed6348aae28ebd4a06f2))
 
-### Changed
-- Setup simplification with IEEE 2030.5 discovery and Home Assistant runtime tests.
-- Local meter telemetry mapping and TLS compatibility improvements.
-- CI stability fixes for telemetry fallback and lint checks.
+### Features
 
-## [0.1.1] - 2026-06-08
-
-### Changed
-- Initial HACS-oriented version bump and release preparation.
+- Simplify setup and add discovery plus HA runtime tests
+  ([`bb64bc4`](https://github.com/mozts2005/ha_ieee20305_meter/commit/bb64bc401f7b550af83f502dbb8be1bb6c8f4354))
