@@ -104,3 +104,10 @@ Security notes:
 
 - The implementation uses `DataUpdateCoordinator` polling.
 - No MQTT dependencies are used in code, manifest, or tests.
+
+## Contribution and Release Policy
+
+- All changes to `main` must come through a pull request.
+- Pull requests require passing CI checks for lint, unit tests, and changelog validation.
+- `CHANGELOG.md` must be updated in every pull request.
+- Merges to `main` are squash-only.

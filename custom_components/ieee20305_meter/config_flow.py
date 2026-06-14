@@ -190,7 +190,9 @@ class IEEE20305OptionsFlow(config_entries.OptionsFlow):
 
             meter_host = user_input[CONF_METER_HOST]
             entry_title = display_name or f"IEEE 2030.5 Meter - {meter_host}"
-            self.hass.config_entries.async_update_entry(self._config_entry, title=entry_title)
+            hass = getattr(self, "hass", None)
+            if hass is not None:
+                hass.config_entries.async_update_entry(self._config_entry, title=entry_title)
 
             return self.async_create_entry(title="", data=entry_data)
 

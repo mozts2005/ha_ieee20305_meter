@@ -5,10 +5,12 @@ on:
   pull_request:
 
 jobs:
-  checks:
+  lint-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -23,3 +25,20 @@ jobs:
         run: ruff check .
       - name: Tests
         run: pytest -q
+
+  changelog:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ensure CHANGELOG.md updated
+        run: |
+          git fetch origin "${{ github.base_ref }}"
+          CHANGED_FILES="$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")"
+          echo "$CHANGED_FILES"
+          echo "$CHANGED_FILES" | grep -q '^CHANGELOG\.md$' || {
+            echo "CHANGELOG.md must be updated for all pull requests."
+            exit 1
+          }

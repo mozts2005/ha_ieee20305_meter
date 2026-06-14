@@ -109,7 +109,17 @@ def _install_homeassistant_stubs(monkeypatch: pytest.MonkeyPatch) -> None:
     async def async_ensure_certificates(_hass: Any, data: dict[str, Any]) -> dict[str, Any]:
         return data
 
+    async def async_migrate_legacy_certificate_paths(
+        _hass: Any, data: dict[str, Any]
+    ) -> dict[str, Any]:
+        return data
+
+    async def async_has_deprecated_certificate_paths(_hass: Any, _data: dict[str, Any]) -> bool:
+        return False
+
     certs.async_ensure_certificates = async_ensure_certificates
+    certs.async_migrate_legacy_certificate_paths = async_migrate_legacy_certificate_paths
+    certs.async_has_deprecated_certificate_paths = async_has_deprecated_certificate_paths
     certs.compute_lfdi = lambda _path: "STUBBEDLFDI"
 
     ieee20305_client = ModuleType("custom_components.ieee20305_meter.ieee20305_client")
@@ -229,7 +239,7 @@ async def test_config_flow_creates_entry_from_simple_user_input(
     )
 
     assert result["type"] == "create_entry"
-    assert result["title"] == "IEEE 2030.5 Meter"
+    assert result["title"] == "IEEE 2030.5 Meter - meter.local"
     assert result["data"]["endpoint"] == "https://meter.local:8443"
     assert result["data"]["agent_version"] == "v3"
     assert result["data"]["show_lfdi"] is False
@@ -373,6 +383,7 @@ async def test_async_setup_entry_bootstraps_certs_registers_coordinator_and_forw
             self.hass = hass
             self.entry = entry
             self.refreshed = False
+            self.in_error_state = False
 
         async def async_config_entry_first_refresh(self) -> None:
             self.refreshed = True

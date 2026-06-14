@@ -5,8 +5,6 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.helpers.dispatcher import async_dispatcher_send
-
 from .certs import (
     async_ensure_certificates,
     async_has_deprecated_certificate_paths,
@@ -42,8 +40,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     with different endpoints and credentials.
     """
     from homeassistant.const import Platform
-    from homeassistant.helpers.entity_platform import async_get_platforms
-    from homeassistant.components import persistent_notification
     from .coordinator import IEEE20305DataUpdateCoordinator
 
     platforms: list[Any] = [Platform.SENSOR]
